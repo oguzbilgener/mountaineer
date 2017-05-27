@@ -62,6 +62,12 @@ void setup() {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(400);
     digitalWrite(LED_BUILTIN, LOW);
+    if (IS_LEADER) {
+      delay(100);
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(400);
+      digitalWrite(LED_BUILTIN, LOW);
+    }
        // Serial.println("BMP180 init success");
   }
   else
