@@ -230,8 +230,10 @@ public class BluetoothService {
                     readMessage.append(read);
 
                     if (read.contains(Constants.SEPARATOR)) {
-                        String[] parts = readMessage.toString().split(Constants.SEPARATOR);
-                        for (String msg: parts) {
+//                        Log.d("oguz", "rm `"+readMessage.toString()+"`");
+                        String[] parts = readMessage.toString().trim().split("\\"+Constants.SEPARATOR);
+                        for (int i=0;i<parts.length;i++) {
+                            String msg = parts[i];
                             if (msg.startsWith("$$$") && msg.endsWith("$$$")) {
                                 myHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, msg).sendToTarget();
                             }

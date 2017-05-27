@@ -131,6 +131,9 @@ void useHwMessage(){
   if(inHwBuffer[3] == '1' || inHwBuffer[3] == '2' || inHwBuffer[3] == '3' || inHwBuffer[3] == '4'){
     forwardHwToBt();
     // TODO LEADER
+    if (IS_LEADER) {
+
+    }
   }
   else {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -169,7 +172,7 @@ void sendSensorValues(){
   sensorMessage[16] = '$';
   sensorMessage[17] = '\0';
   sendBt(sensorMessage, 17);
-  sendHw(sensorMessage, 18);
+  sendHw(sensorMessage, 17);
 }
 void sendSosSignal() {
   sosMessage[0] = '$';

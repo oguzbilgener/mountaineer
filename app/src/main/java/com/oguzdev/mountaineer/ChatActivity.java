@@ -144,28 +144,30 @@ public class ChatActivity extends AppCompatActivity {
                 case Constants.MESSAGE_READ:
 
                     String readMessage = (String) msg.obj;
-                    readMessage = readMessage.substring(0, readMessage.length() - 1);
-                    Log.d("oguz", "msg: "+readMessage);
+//                    readMessage = readMessage.substring(0, readMessage.length() - 1);
+                    Log.d("oguz", "msg: `"+readMessage+"`");
 
 
                     try {
                         DataMessage message = new DataMessage(readMessage.getBytes(StandardCharsets.UTF_8));
                         ChatMessage chatMessage;
+                        String senderStr = message.getSender() == DataMessage.SENDER_MY_DEVICE ? "my" : "other";
+
                         // TODO: check sender
                         if (message.getType() == DataMessage.TYPE_HUMAN) {
                             chatMessage = new ChatMessage(message.getTextMessage(), message.getDate(), ChatMessage.Type.RECEIVED);
                             activity.chatView.addMessage(chatMessage);
                         }
                         else if (message.getType() == DataMessage.TYPE_SOS) {
-                            chatMessage = new ChatMessage("SOS!!!!!!!", message.getDate(), ChatMessage.Type.RECEIVED);
+                            chatMessage = new ChatMessage("SOS!!!!!!! "+senderStr, message.getDate(), ChatMessage.Type.RECEIVED);
                             activity.chatView.addMessage(chatMessage);
                         }
                         else if (message.getType() == DataMessage.TYPE_SENSOR) {
-                            chatMessage = new ChatMessage(message.getSensorData().toString(), message.getDate(), ChatMessage.Type.RECEIVED);
+                            chatMessage = new ChatMessage(message.getSensorData().toString()+" "+senderStr, message.getDate(), ChatMessage.Type.RECEIVED);
                             activity.chatView.addMessage(chatMessage);
                         }
                         else if (message.getType() == DataMessage.TYPE_ONLINE) {
-                            chatMessage = new ChatMessage("Online", message.getDate(), ChatMessage.Type.RECEIVED);
+                            chatMessage = new ChatMessage("Online "+senderStr, message.getDate(), ChatMessage.Type.RECEIVED);
                             activity.chatView.addMessage(chatMessage);
                         }
 
