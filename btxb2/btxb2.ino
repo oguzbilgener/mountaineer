@@ -78,17 +78,42 @@ void loop() {
    }
 
    if(gotBtMessage) {
-//      Serial.print(inBtBuffer);
+//      Serial.print(inBtBuffer); 
+      useBtMessage();    
       clearBtBuffer();
    }
 
    if(gotHwMessage){
 //      bt.print(inBuffer2);
+      useHwMessage();
       clearHwBuffer();
 
    }
 }
+void useBtMessage(){
+  if(inBtBuffer[3] == 1){
+    forwardMessage();
+  }
+}
 
+void useHwMessage(){
+  if(inHwBuffer[3] == 1){
+    deliverMessage();
+  }
+}
+
+//To forward the human message from a node to the other node
+void forwardMessage(){
+    inHwBuffer[4] = 2;
+    Serial.print(inHwBuffer);
+}
+
+//To deliver the human message from a node to a phone
+void deliverMessage(){
+    inHwBuffer[2] = 3;
+    // TODO
+    //bluetooth print
+}
 void sendSensorValues(){
   sensorMessage[0] = '$';
   sensorMessage[1] = '$';
@@ -110,7 +135,6 @@ void sendSensorValues(){
   sensorMessage[17] = '\0';
   sendBt(sensorMessage, 17);
   sendHw(sensorMessage, 18);
-
 //  Serial.println(sensorMessage);
 //  Serial.println(altArr);
   delay(1000);
