@@ -105,9 +105,6 @@ void loop() {
 void useBtMessage(){
     if (inBtBuffer[0] != '$' || inBtBuffer[1] != '$'  || inBtBuffer[2] != '$' ||
         inBtBuffer[btPos-2] != '$' || inBtBuffer[btPos-3] != '$' || inBtBuffer[btPos-4] != '$') {
-        Serial.print("@");
-        sendHw(inBtBuffer, btPos - 1);
-        Serial.println("@");
         digitalWrite(LED_BUILTIN, HIGH);
         lastWarningLedTime = millis();
         return;
@@ -126,8 +123,9 @@ void useHwMessage(){
         return;
     }
   // if this message is from a human
-  if(inHwBuffer[3] == '1'){
+  if(inHwBuffer[3] == '1' || inHwBuffer[3] == '2' || inHwBuffer[3] == '3' || inHwBuffer[3] == '4'){
     forwardHwToBt();
+    // TODO LEADER
   }
   else {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -178,8 +176,8 @@ void sendSosSignal() {
   sosMessage[6] = '$';
   sosMessage[7] = '$';
 
-  Serial.print(sosMessage);
-  Serial.print(SEP);
+  sendBt(sosMessage, 8);
+  sendHw(sosMessage, 8);
 //  Serial.println(sosMessage);
 //  bt.print(sosMessage);
 
@@ -194,6 +192,7 @@ void readSensor() {
   {
     delay(status);
     status = pressure.getTemperature(T);
+    status = status + 10;
 
     if (status != 0)
     {
