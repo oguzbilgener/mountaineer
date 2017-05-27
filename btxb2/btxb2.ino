@@ -319,7 +319,7 @@ void sendHw(char buffer[], int len) {
     }
     Serial.print(buffer[i]);
   }
-  Serial.print(SEP);
+  Serial.println(SEP);
 }
 
 
