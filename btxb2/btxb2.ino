@@ -1,6 +1,7 @@
 #define SEP '|' // |
 #define SOSPIN 6
 #define ALTITUDE 1005.0
+#define SENSOR_MS 10 * 1000
 
 
 #include <SoftwareSerial.h>
@@ -33,6 +34,8 @@ double T,P,p0,a;
 
 SFE_BMP180 pressure;
 
+unsigned long lastSensorSendTime;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -58,14 +61,13 @@ void setup() {
 }
 
 void loop() {
-  Serial.println();
 
   sos = digitalRead(SOSPIN);
 
   readBluetooth();
   readHardware();
 
-  readPressure();
+  readSensor();
 
 
    if (sos == HIGH && lastSos != HIGH) {
@@ -77,42 +79,51 @@ void loop() {
       lastSos = sos;
    }
 
-   if(gotBtMessage) {
-//      Serial.print(inBtBuffer); 
-      useBtMessage();    
+    if(gotBtMessage) {
+
+
+      useBtMessage();
       clearBtBuffer();
    }
 
    if(gotHwMessage){
-//      bt.print(inBuffer2);
       useHwMessage();
       clearHwBuffer();
 
    }
 }
 void useBtMessage(){
+    if (inBtBuffer[0] != '$' || inBtBuffer[1] != '$'  || inBtBuffer[2] != '$' ||
+        inBtBuffer[btPos-1] != '$' || inBtBuffer[hwPos-2] != '$'  || inBtBuffer[hwPos-3] != '$') {
+        return;
+    }
+  // if this message is from a human
   if(inBtBuffer[3] == 1){
-    forwardMessage();
+    forwardBtToHw();
   }
 }
 
 void useHwMessage(){
+    if (inHwBuffer[0] != '$' || inHwBuffer[1] != '$'  || inHwBuffer[2] != '$' ||
+        inHwBuffer[hwPos-1] != '$' || inHwBuffer[hwPos-2] != '$'  || inHwBuffer[hwPos-3] != '$') {
+        return;
+    }
+  // if this message is from a human
   if(inHwBuffer[3] == 1){
-    deliverMessage();
+    forwardHwToBt();
   }
 }
 
 //To forward the human message from a node to the other node
-void forwardMessage(){
-    inHwBuffer[4] = 2;
-    Serial.print(inHwBuffer);
+void forwardBtToHw(){
+    inBtBuffer[4] = 2;
+    sendHw(inBtBuffer, btPos);
 }
 
 //To deliver the human message from a node to a phone
-void deliverMessage(){
-    inHwBuffer[2] = 3;
-    // TODO
-    //bluetooth print
+void forwardHwToBt(){
+    inHwBuffer[4] = 3;
+    sendBt(inHwBuffer, hwPos);
 }
 void sendSensorValues(){
   sensorMessage[0] = '$';
@@ -135,8 +146,6 @@ void sendSensorValues(){
   sensorMessage[17] = '\0';
   sendBt(sensorMessage, 17);
   sendHw(sensorMessage, 18);
-//  Serial.println(sensorMessage);
-//  Serial.println(altArr);
   delay(1000);
 }
 void sendSosSignal() {
@@ -156,7 +165,10 @@ void sendSosSignal() {
 
 }
 
-void readPressure() {
+void readSensor() {
+  if (millis() - lastSensorSendTime < SENSOR_MS) {
+    return;
+  }
   status = pressure.startTemperature();
   if (status != 0)
   {
@@ -198,6 +210,7 @@ void readPressure() {
             tempArr[1] = '0' + char(temp2);
             tempArr[2] = '0' + char(temp3);
 
+            lastSensorSendTime = millis();
            sendSensorValues();
          }
       }
@@ -214,8 +227,7 @@ void readBluetooth() {
   }
 
   if((inBluetooth >= 0) && (inBluetooth <= 127)){
-      inBtBuffer[btPos] = inBluetooth;
-      btPos ++;
+      inBtBuffer[btPos++] = inBluetooth;
    }
 
    gotBtMessage = inBluetooth == SEP;
@@ -230,8 +242,7 @@ void readHardware() {
   }
 
   if((inHw >= 0) && (inHw <= 127)){
-      inHwBuffer[hwPos] = inHw;
-      hwPos ++;
+      inHwBuffer[hwPos++] = inHw;
     }
    gotHwMessage = inHw == SEP;
 }

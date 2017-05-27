@@ -230,8 +230,17 @@ public class BluetoothService {
                     readMessage.append(read);
 
                     if (read.contains(Constants.SEPARATOR)) {
+                        String[] parts = readMessage.toString().split(Constants.SEPARATOR);
+                        for (String msg: parts) {
+                            if (msg.startsWith("$$$") && msg.endsWith("$$$")) {
+                                myHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, msg).sendToTarget();
+                            }
+                            else {
+                                Log.d("oguz", "broken message arrived: `"+msg+"`");
+                            }
+                        }
 
-                        myHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, readMessage.toString()).sendToTarget();
+
                         readMessage.setLength(0);
                     }
 

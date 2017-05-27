@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.oguzdev.mountaineer"
-        minSdkVersion 22
+        minSdkVersion 21
         targetSdkVersion 25
         multiDexEnabled true
         versionCode 1
