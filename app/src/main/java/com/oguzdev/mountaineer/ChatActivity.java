@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
@@ -41,6 +42,8 @@ public class ChatActivity extends AppCompatActivity {
     ProgressBar toolbalProgressBar;
     @BindView(R.id.chat_view)
     ChatView chatView;
+    @BindView(R.id.my_sensor_data)
+    TextView mySensorLabel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,8 +166,17 @@ public class ChatActivity extends AppCompatActivity {
                             activity.chatView.addMessage(chatMessage);
                         }
                         else if (message.getType() == DataMessage.TYPE_SENSOR) {
-                            chatMessage = new ChatMessage(message.getSensorData().toString()+" "+senderStr, message.getDate(), ChatMessage.Type.RECEIVED);
-                            activity.chatView.addMessage(chatMessage);
+                            if (message.getSender() == DataMessage.SENDER_MY_DEVICE) {
+                                activity.mySensorLabel.setText(
+                                        message.getSensorData().getTemperature()+" °C\n" +
+                                        message.getSensorData().getAltitude()+" m\n"
+                                );
+                            }
+                            else {
+                                chatMessage = new ChatMessage(message.getSensorData().toString()+" "+senderStr, message.getDate(), ChatMessage.Type.RECEIVED);
+                                activity.chatView.addMessage(chatMessage);
+                            }
+
                         }
                         else if (message.getType() == DataMessage.TYPE_ONLINE) {
                             chatMessage = new ChatMessage("Online "+senderStr, message.getDate(), ChatMessage.Type.RECEIVED);
@@ -223,4 +235,10 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
     };
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 }
