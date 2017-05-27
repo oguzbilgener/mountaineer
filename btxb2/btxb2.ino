@@ -48,15 +48,15 @@ void setup() {
   lastSensorSendTime = 0;
   lastWarningLedTime = 0;
 
-  digitalWrite(LED_BUILTIN, HIGH);  
-  delay(400);                      
-  digitalWrite(LED_BUILTIN, LOW);   
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(400);
+  digitalWrite(LED_BUILTIN, LOW);
 
   if (pressure.begin()) {
     delay(100);
-    digitalWrite(LED_BUILTIN, HIGH);  
-    delay(400);                      
-    digitalWrite(LED_BUILTIN, LOW);   
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(400);
+    digitalWrite(LED_BUILTIN, LOW);
        // Serial.println("BMP180 init success");
   }
   else
@@ -92,8 +92,6 @@ void loop() {
    }
 
     if(gotBtMessage) {
-
-
       useBtMessage();
       clearBtBuffer();
    }
@@ -106,39 +104,46 @@ void loop() {
 }
 void useBtMessage(){
     if (inBtBuffer[0] != '$' || inBtBuffer[1] != '$'  || inBtBuffer[2] != '$' ||
-        inBtBuffer[btPos-1] != '$' || inBtBuffer[hwPos-2] != '$'  || inBtBuffer[hwPos-3] != '$') {
-        digitalWrite(LED_BUILTIN, HIGH);  
+        inBtBuffer[btPos-2] != '$' || inBtBuffer[btPos-3] != '$' || inBtBuffer[btPos-4] != '$') {
+        Serial.print("@");
+        sendHw(inBtBuffer, btPos - 1);
+        Serial.println("@");
+        digitalWrite(LED_BUILTIN, HIGH);
         lastWarningLedTime = millis();
         return;
     }
   // if this message is from a human
-  if(inBtBuffer[3] == 1){
+  if(inBtBuffer[3] == '1'){
     forwardBtToHw();
   }
 }
 
 void useHwMessage(){
     if (inHwBuffer[0] != '$' || inHwBuffer[1] != '$'  || inHwBuffer[2] != '$' ||
-        inHwBuffer[hwPos-1] != '$' || inHwBuffer[hwPos-2] != '$'  || inHwBuffer[hwPos-3] != '$') {
-        digitalWrite(LED_BUILTIN, HIGH);  
+        inHwBuffer[hwPos-2] != '$' || inHwBuffer[hwPos-3] != '$' || inHwBuffer[hwPos-4] != '$') {
+        digitalWrite(LED_BUILTIN, HIGH);
         lastWarningLedTime = millis();
         return;
     }
   // if this message is from a human
-  if(inHwBuffer[3] == 1){
+  if(inHwBuffer[3] == '1'){
     forwardHwToBt();
+  }
+  else {
+    digitalWrite(LED_BUILTIN, HIGH);
+    lastWarningLedTime = millis();
   }
 }
 
 //To forward the human message from a node to the other node
 void forwardBtToHw(){
-    inBtBuffer[4] = 2;
-    sendHw(inBtBuffer, btPos);
+    inBtBuffer[4] = '2';
+    sendHw(inBtBuffer, btPos - 1);
 }
 
 //To deliver the human message from a node to a phone
 void forwardHwToBt(){
-    inHwBuffer[4] = 3;
+    inHwBuffer[4] = '3';
     sendBt(inHwBuffer, hwPos);
 }
 void sendSensorValues(){
@@ -281,7 +286,7 @@ void clearHwBuffer() {
 
 void sendBt(char buffer[], int len) {
   for (int i=0;i<len;i++) {
-    if (buffer[i] < 0 || buffer[i] > 127) {
+    if (buffer[i] <= 0 || buffer[i] > 127) {
       break;
     }
     bt.print(buffer[i]);
@@ -294,7 +299,7 @@ void sendBt(char buffer[], int len) {
 
 void sendHw(char buffer[], int len) {
   for (int i=0;i<len;i++) {
-    if (buffer[i] < 0 || buffer[i] > 127) {
+    if (buffer[i] <= 0 || buffer[i] > 127) {
       break;
     }
     Serial.print(buffer[i]);
