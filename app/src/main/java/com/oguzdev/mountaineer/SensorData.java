@@ -34,7 +34,6 @@ public class SensorData {
         }
 
         try {
-            Log.d("oguz", "tmp "+tempBuilder.toString());
             temperature = Float.parseFloat(tempBuilder.toString());
         } catch (NumberFormatException e) {
             throw new ParseException(String.format("Invalid temperature: '%s'", tempBuilder.toString()), 0);

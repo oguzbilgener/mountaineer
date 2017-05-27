@@ -123,8 +123,13 @@ void useBtMessage(){
         return;
     }
   // if this message is from a human
-  if(inBtBuffer[3] == '1' || inBtBuffer[3] == '2' || inBtBuffer[3] == '3' || inBtBuffer[3] == '3'){
+  if(inBtBuffer[3] == '1' || inBtBuffer[3] == '2' || inBtBuffer[3] == '3' || inBtBuffer[3] == '4'){
     forwardBtToHw();
+  }
+  else {
+    digitalWrite(LED_BUILTIN, HIGH);
+    lastWarningLedTime = millis();
+    return;
   }
 }
 
@@ -314,9 +319,9 @@ void sendBt(char buffer[], int len) {
 
 void sendHw(char buffer[], int len) {
   for (int i=0;i<len;i++) {
-    if (buffer[i] <= 0 || buffer[i] > 127) {
+    /*if (buffer[i] <= 0 || buffer[i] > 127) {
       break;
-    }
+    }*/
     Serial.print(buffer[i]);
   }
   Serial.println(SEP);

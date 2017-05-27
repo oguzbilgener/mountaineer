@@ -228,6 +228,8 @@ public class BluetoothService {
                     bytes = mmInStream.read(buffer);
                     String read = new String(buffer, 0, bytes);
                     readMessage.append(read);
+                    Log.d("oguz", "incoming "+read)
+                    ;
 
                     if (read.contains(Constants.SEPARATOR)) {
 //                        Log.d("oguz", "rm `"+readMessage.toString()+"`");
