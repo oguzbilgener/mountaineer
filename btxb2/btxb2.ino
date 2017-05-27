@@ -1,6 +1,5 @@
 #define SEP '|' // |
 #define SOSPIN 6
-#define LEADERPIN 9
 #define ALTITUDE 1005.0
 #define SENSOR_MS 10 * 1000
 
@@ -11,7 +10,6 @@
 
 SoftwareSerial bt(7,8);
 
-boolean IS_LEADER;
 char sosMessage[8];
 char sensorMessage[18];
 
@@ -37,28 +35,33 @@ double T,P,p0,a;
 SFE_BMP180 pressure;
 
 unsigned long lastSensorSendTime;
+unsigned long lastWarningLedTime;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   bt.begin(9600);
   pinMode(SOSPIN, INPUT);
-  pinMode(LEADERPIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   lastSos = LOW;
   sos = LOW;
+  lastSensorSendTime = 0;
+  lastWarningLedTime = 0;
 
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(1000);                       // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-
-  IS_LEADER = digitalRead(LEADERPIN);
+  digitalWrite(LED_BUILTIN, HIGH);  
+  delay(400);                      
+  digitalWrite(LED_BUILTIN, LOW);   
 
   if (pressure.begin()) {
+    delay(100);
+    digitalWrite(LED_BUILTIN, HIGH);  
+    delay(400);                      
+    digitalWrite(LED_BUILTIN, LOW);   
        // Serial.println("BMP180 init success");
   }
   else
   {
+    digitalWrite(LED_BUILTIN, HIGH);
     Serial.println("BMP180 init fail\n\n");
     while(1); // Pause forever.
   }
@@ -73,6 +76,10 @@ void loop() {
   readHardware();
 
   readSensor();
+
+  if (millis() - lastWarningLedTime > 200) {
+    digitalWrite(LED_BUILTIN, LOW);
+  }
 
 
    if (sos == HIGH && lastSos != HIGH) {
@@ -100,6 +107,8 @@ void loop() {
 void useBtMessage(){
     if (inBtBuffer[0] != '$' || inBtBuffer[1] != '$'  || inBtBuffer[2] != '$' ||
         inBtBuffer[btPos-1] != '$' || inBtBuffer[hwPos-2] != '$'  || inBtBuffer[hwPos-3] != '$') {
+        digitalWrite(LED_BUILTIN, HIGH);  
+        lastWarningLedTime = millis();
         return;
     }
   // if this message is from a human
@@ -111,6 +120,8 @@ void useBtMessage(){
 void useHwMessage(){
     if (inHwBuffer[0] != '$' || inHwBuffer[1] != '$'  || inHwBuffer[2] != '$' ||
         inHwBuffer[hwPos-1] != '$' || inHwBuffer[hwPos-2] != '$'  || inHwBuffer[hwPos-3] != '$') {
+        digitalWrite(LED_BUILTIN, HIGH);  
+        lastWarningLedTime = millis();
         return;
     }
   // if this message is from a human
@@ -151,7 +162,6 @@ void sendSensorValues(){
   sensorMessage[17] = '\0';
   sendBt(sensorMessage, 17);
   sendHw(sensorMessage, 18);
-  delay(1000);
 }
 void sendSosSignal() {
   sosMessage[0] = '$';
