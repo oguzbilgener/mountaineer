@@ -1,5 +1,7 @@
 package com.oguzdev.mountaineer;
 
+import android.util.Log;
+
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Locale;
@@ -24,14 +26,15 @@ public class SensorData {
             }
             else {
                 if (!tempDone) {
-                    tempBuilder.append(payload[i]);
+                    tempBuilder.append(((char)payload[i]));
                 } else {
-                    altBuilder.append(payload[i]);
+                    altBuilder.append(((char)payload[i]));
                 }
             }
         }
 
         try {
+            Log.d("oguz", "tmp "+tempBuilder.toString());
             temperature = Float.parseFloat(tempBuilder.toString());
         } catch (NumberFormatException e) {
             throw new ParseException(String.format("Invalid temperature: '%s'", tempBuilder.toString()), 0);

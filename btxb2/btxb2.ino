@@ -1,4 +1,4 @@
-#define SEP '\n' // |
+#define SEP '|' // |
 #define SOSPIN 6
 #define ALTITUDE 1005.0
 
@@ -10,17 +10,17 @@
 SoftwareSerial bt(7,8);
 
 char sosMessage[8];
-char sensorMessage[17];
+char sensorMessage[18];
 
 char inBluetooth = -1;
 char inBtBuffer[100];
-int btPos = 0; 
+int btPos = 0;
 boolean gotBtMessage;
 
 char inHw = -1;
 char inHwBuffer[100];
 int hwPos = 0;
-boolean gotHwMessage; 
+boolean gotHwMessage;
 
 int sos, lastSos;
 int newStringPos = 0;
@@ -35,39 +35,38 @@ SFE_BMP180 pressure;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600); 
-//  bt.begin(9600);
+  Serial.begin(9600);
+  bt.begin(9600);
   pinMode(SOSPIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   lastSos = LOW;
   sos = LOW;
-
-  Serial.println("setup()");
 
   digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
   delay(1000);                       // wait for a second
   digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
 
   if (pressure.begin()) {
-       Serial.println("BMP180 init success"); 
+       // Serial.println("BMP180 init success");
   }
   else
   {
     Serial.println("BMP180 init fail\n\n");
     while(1); // Pause forever.
   }
-  
+
 }
 
-void loop() {  
-  
+void loop() {
+  Serial.println();
+
   sos = digitalRead(SOSPIN);
-  
-  readBluetooth();  
+
+  readBluetooth();
   readHardware();
 
   readPressure();
-   
+
 
    if (sos == HIGH && lastSos != HIGH) {
       sendSosSignal();
@@ -79,14 +78,14 @@ void loop() {
    }
 
    if(gotBtMessage) {
-//      Serial.print(inBtBuffer);     
+//      Serial.print(inBtBuffer);
       clearBtBuffer();
    }
-   
-   if(gotHwMessage){      
+
+   if(gotHwMessage){
 //      bt.print(inBuffer2);
       clearHwBuffer();
- 
+
    }
 }
 
@@ -95,25 +94,23 @@ void sendSensorValues(){
   sensorMessage[1] = '$';
   sensorMessage[2] = '$';
   sensorMessage[3] = '3';
-  sensorMessage[3] = '2';
-  sensorMessage[4] = tempArr[0];
-  sensorMessage[5] = tempArr[1];
-  sensorMessage[6] = '.';
-  sensorMessage[7] = tempArr[2];
-  sensorMessage[8] = '#';
-  sensorMessage[9] = altArr[0];
-  sensorMessage[10] = altArr[1];
-  sensorMessage[11] = altArr[2];
-  sensorMessage[12] = altArr[3];
-  sensorMessage[13] = '$';
+  sensorMessage[4] = '2';
+  sensorMessage[5] = tempArr[0];
+  sensorMessage[6] = tempArr[1];
+  sensorMessage[7] = '.';
+  sensorMessage[8] = tempArr[2];
+  sensorMessage[9] = '#';
+  sensorMessage[10] = altArr[0];
+  sensorMessage[11] = altArr[1];
+  sensorMessage[12] = altArr[2];
+  sensorMessage[13] = altArr[3];
   sensorMessage[14] = '$';
   sensorMessage[15] = '$';
-  sensorMessage[16] = '\0';
-  for (int i=0;i<16;i++) {
-    Serial.print(sensorMessage[i]);
-  }
-  Serial.print(SEP);
-  
+  sensorMessage[16] = '$';
+  sensorMessage[17] = '\0';
+  sendBt(sensorMessage, 17);
+  sendHw(sensorMessage, 18);
+
 //  Serial.println(sensorMessage);
 //  Serial.println(altArr);
   delay(1000);
@@ -132,7 +129,7 @@ void sendSosSignal() {
   Serial.print(SEP);
 //  Serial.println(sosMessage);
 //  bt.print(sosMessage);
-  
+
 }
 
 void readPressure() {
@@ -141,7 +138,7 @@ void readPressure() {
   {
     delay(status);
     status = pressure.getTemperature(T);
-    
+
     if (status != 0)
     {
       status = pressure.startPressure(3);
@@ -152,24 +149,19 @@ void readPressure() {
          if (status != 0)
          {
             p0 = pressure.sealevel(P,ALTITUDE);
-            a = pressure.altitude(P,p0); // metre 
+            a = pressure.altitude(P,p0); // metre
             //Height Char Calculations
             int alt1 = a / 1000;
             int alt2 = (a / 100) - (alt1 * 10);
             int alt3 = (a / 10) - (alt1 * 100) - (alt2 * 10);
             int alt4 = ((int)a) % 10;
-          
-            char alt1char = char (alt1);
-            char alt2char = char (alt2);
-            char alt3char = char (alt3);
-            char alt4char = char (alt4);
-          
-            altArr[0] = alt1char;
-            altArr[1] = alt2char;
-            altArr[2] = alt3char;
-            altArr[3] = alt4char;
-            
-            
+
+            altArr[0] = '0' + char (alt1);
+            altArr[1] = '0' + char (alt2);
+            altArr[2] = '0' + char (alt3);
+            altArr[3] = '0' + char (alt4);
+
+
             // Temp Char Calculations
             int tempValue = analogRead(A0);
             float temp = tempValue * 0.48828125;
@@ -177,28 +169,12 @@ void readPressure() {
             int temp1 = temp / 10;
             int temp2 = temp - (temp1 * 10);
             int temp3 = (temp  * 10) - (tempInt * 10);
-          
-            char temp1char = char(temp1);
-            char temp2char = char(temp2);
-            char temp3char = char(temp3);
-          
-            tempArr[0] = temp1char;
-            tempArr[1] = temp2char;
-            tempArr[2] = temp3char;
 
-            Serial.print(P);
-            Serial.print(" ");
-            Serial.print(p0);
-            Serial.print(" ");
-            Serial.println(T);
-            delay(400);
+            tempArr[0] = '0' + char(temp1);
+            tempArr[1] = '0' + char(temp2);
+            tempArr[2] = '0' + char(temp3);
 
-//            Serial.print(temp);
-//            Serial.print("----");
-//            Serial.println(tempValue);
-//            delay(500);
-            
-//            sendSensorValues();
+           sendSensorValues();
          }
       }
     }
@@ -223,7 +199,7 @@ void readBluetooth() {
 
 void readHardware() {
   if(Serial.available()) {
-    inHw = Serial.read();    
+    inHw = Serial.read();
   }
   else {
     inHw = -1;
@@ -231,7 +207,7 @@ void readHardware() {
 
   if((inHw >= 0) && (inHw <= 127)){
       inHwBuffer[hwPos] = inHw;
-      hwPos ++;      
+      hwPos ++;
     }
    gotHwMessage = inHw == SEP;
 }
@@ -252,4 +228,28 @@ void clearHwBuffer() {
       inHw = -1;
 
 }
+
+void sendBt(char buffer[], int len) {
+  for (int i=0;i<len;i++) {
+    if (buffer[i] < 0 || buffer[i] > 127) {
+      break;
+    }
+    bt.print(buffer[i]);
+  }
+  bt.print(SEP); //
+  // if (SEP == '|') {
+  //   bt.print('\n');
+  // }
+}
+
+void sendHw(char buffer[], int len) {
+  for (int i=0;i<len;i++) {
+    if (buffer[i] < 0 || buffer[i] > 127) {
+      break;
+    }
+    Serial.print(buffer[i]);
+  }
+  Serial.print(SEP);
+}
+
 
