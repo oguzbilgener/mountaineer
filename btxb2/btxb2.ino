@@ -91,6 +91,8 @@ void loop() {
       sendSosSignal();
       lastSos = sos;
       sos = LOW;
+      digitalWrite(LED_BUILTIN, HIGH);
+      lastWarningLedTime = millis();
    }
    else {
       lastSos = sos;
@@ -115,7 +117,7 @@ void useBtMessage(){
         return;
     }
   // if this message is from a human
-  if(inBtBuffer[3] == '1'){
+  if(inBtBuffer[3] == '1' || inBtBuffer[3] == '2' || inBtBuffer[3] == '3' || inBtBuffer[3] == '3'){
     forwardBtToHw();
   }
 }
@@ -150,7 +152,7 @@ void forwardBtToHw(){
 //To deliver the human message from a node to a phone
 void forwardHwToBt(){
     inHwBuffer[4] = '3';
-    sendBt(inHwBuffer, hwPos);
+    sendBt(inHwBuffer, hwPos - 1);
 }
 void sendSensorValues(){
   sensorMessage[0] = '$';
