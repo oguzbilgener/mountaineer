@@ -55,7 +55,7 @@ void setup() {
   delay(400);
   digitalWrite(LED_BUILTIN, LOW);
 
-  IS_LEADER = digitalRead(LEADERPIN)
+  IS_LEADER = digitalRead(LEADERPIN);
 
   if (pressure.begin()) {
     delay(100);
