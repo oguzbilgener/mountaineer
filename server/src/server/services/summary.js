@@ -1,4 +1,5 @@
 'use strict';
+import moment from 'moment';
 
 function mapAllData(rows) {
     return Promise.resolve().then(() => {
@@ -9,13 +10,16 @@ function mapAllData(rows) {
 function mapSensorDataForCharts(rows) {
     let data = {
         leader: {temp: [], alt: []},
-        member: {temp: [], alt: []}
+        member: {temp: [], alt: []},
     }
 
-    rows.forEach((row) => {
-        u = row.sender == 3 ? 'member' : 'leader';
-        data[u]['temp'] = row.temp;
-        data[u]['alt'] =  row.alt;
+    let lim = 12;
+    let start = Math.max(rows.length - 12, 0)
+    rows.slice(start, start + lim).forEach((row) => {
+        let u = row.sender == 3 ? 'member' : 'leader';
+        let key = moment(parseInt(row.senttime)).format('mm');
+        data[u]['temp'].push({'time': key, 'val': row.temp});
+        data[u]['alt'].push({'time': key, 'val': row.alt});
     });
 
     return data;

@@ -35,7 +35,8 @@ app.get('/', function (req, res) {
     summaryService(pool, req, res).then((data) => {
         res.end(ReactDOMServer.renderToStaticMarkup(
             React.createElement(Wrapper, {
-                content: ReactDOMServer.renderToString(React.createElement(Summary, {data}))
+                content: ReactDOMServer.renderToString(React.createElement(Summary, {data})),
+                data
             })
         ));
     }).catch((err) => {
@@ -43,7 +44,7 @@ app.get('/', function (req, res) {
     });
 });
 
-app.post('/node', rawBodyParser, function (req, res) {
+function sendNode(req, res, body) {
     let responseType = req.query.type == 'json' ? json : 'text';
     if (responseType == 'json') {
         res.set('Content-Type', 'text/json');
@@ -52,31 +53,20 @@ app.post('/node', rawBodyParser, function (req, res) {
         res.set('Content-Type', 'text/plain');
     }
 
-
-    device(pool, req.rawBody, req, res).then((result) => {
+    device(pool, body, req, res).then((result) => {
         console.log("ok! ", result);
         ok(res, responseType, "OK "+result);
     }).catch((err) => {
         serverError(res, responseType, err.toString());
     });
+}
+
+app.post('/node', rawBodyParser, function (req, res) {
+    sendNode(req, res, req.rawBody);
 });
 
 app.get('/node', rawBodyParser, function (req, res) {
-    let responseType = req.query.type == 'json' ? json : 'text';
-    if (responseType == 'json') {
-        res.set('Content-Type', 'text/json');
-    }
-    else {
-        res.set('Content-Type', 'text/plain');
-    }
-
-
-    device(pool, req.query.data, req, res).then((result) => {
-        console.log("ok! ", result);
-        ok(res, responseType, "OK "+result);
-    }).catch((err) => {
-        serverError(res, responseType, err.toString());
-    });
+    sendNode(req, res, req.query.data);
 });
 
 

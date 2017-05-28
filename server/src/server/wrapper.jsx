@@ -5,6 +5,7 @@ import React from 'react';
 class Wrapper extends React.Component {
 
     render() {
+        let dataStr = "window.appData = " + JSON.stringify(this.props.data) + ";";
 
         return (
             <html>
@@ -15,6 +16,7 @@ class Wrapper extends React.Component {
                 <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css' />
                 <link href="/assets/css/bootstrap.min.css" rel="stylesheet" />
                 <link href="/assets/css/nifty.min.css" rel="stylesheet" />
+                <link href="/assets/css/morris.min.css" rel="stylesheet" />
 
 
             </head>
@@ -68,7 +70,11 @@ class Wrapper extends React.Component {
                 <script src="/assets/js/jquery.min.js" />
                 <script src="/assets/js/bootstrap.min.js" />
                 <script src="/assets/js/nifty.min.js" />
+                <script src="/assets/js/jquery.sparkline.min.js" />
+                <script src="/assets/js/morris.min.js" />
+                <script src="/assets/js/raphael.min.js" />
                 <script src="/mountaineer/mountaineer.js" defer/>
+                <script dangerouslySetInnerHTML={{__html: dataStr }} />
             </body>
             </html>
         );
