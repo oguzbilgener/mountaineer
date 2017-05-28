@@ -185,9 +185,10 @@ public class ChatActivity extends AppCompatActivity {
 
 
                     } catch (ParseException e) {
+                        Log.e("oguz", "broken message `"+readMessage+"`");
                         e.printStackTrace();
-                        ChatMessage chatMessage = new ChatMessage("[Broken message]", new Date().getTime(), ChatMessage.Type.RECEIVED);
-                        activity.chatView.addMessage(chatMessage);
+//                        ChatMessage chatMessage = new ChatMessage("[Broken message]", new Date().getTime(), ChatMessage.Type.RECEIVED);
+//                        activity.chatView.addMessage(chatMessage);
                     }
 
 

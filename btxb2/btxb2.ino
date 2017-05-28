@@ -120,6 +120,7 @@ void useBtMessage(){
         inBtBuffer[btPos-2] != '$' || inBtBuffer[btPos-3] != '$' || inBtBuffer[btPos-4] != '$') {
         digitalWrite(LED_BUILTIN, HIGH);
         lastWarningLedTime = millis();
+        sendBtHumanMessage("Could not parse bt");
         return;
     }
   // if this message is from a human
@@ -138,6 +139,7 @@ void useHwMessage(){
         inHwBuffer[hwPos-2] != '$' || inHwBuffer[hwPos-3] != '$' || inHwBuffer[hwPos-4] != '$') {
         digitalWrite(LED_BUILTIN, HIGH);
         lastWarningLedTime = millis();
+        sendBtHumanMessage("Could not parse hw");
         return;
     }
   // if this message is from a human
@@ -319,12 +321,29 @@ void sendBt(char buffer[], int len) {
 
 void sendHw(char buffer[], int len) {
   for (int i=0;i<len;i++) {
-    /*if (buffer[i] <= 0 || buffer[i] > 127) {
+    if (buffer[i] <= 0 || buffer[i] > 127) {
       break;
-    }*/
+    }
     Serial.print(buffer[i]);
   }
-  Serial.println(SEP);
+  Serial.print(SEP);
 }
 
+void sendBtHumanMessage(char str[]) {
+    char buf[24];
+    int c = 0;
+    while(str[c] != '\0') {
+        buf[4+c] = str[c];
+        c++;
+    }
+    buf[0] = '$';
+    buf[1] = '$';
+    buf[2] = '$';
+    buf[3] = '1';
+    buf[4] = '3';
+    buf[4+c] = '$';
+    buf[4+c+1] = '$';
+    buf[4+c+2] = '$';
+    sendBt(buf, 4+c+3);
+}
 
