@@ -7,6 +7,6 @@ import ReactDOM        from 'react-dom';
 import Summary         from './Summary';
 
 
-ReactDOM.render(
-    React.createElement(Summary, {}), document.getElementById('app')
-);
+// ReactDOM.render(
+//     React.createElement(Summary, {}), document.getElementById('app')
+// );

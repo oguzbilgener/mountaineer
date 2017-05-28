@@ -9,6 +9,7 @@ import React from 'react';
 import Wrapper from './wrapper';
 import Summary from '../client/Summary';
 import device from  './services/device';
+import summaryService from  './services/summary';
 
 import dbConfig from './dbConfig';
 import {serverError, ok} from './response';
@@ -31,12 +32,14 @@ app.use(function(req, res, next) {
 
 app.get('/', function (req, res) {
     // TODO: load stuff from db
-    return pool.connect().then((client) => {
+    summaryService(pool, req, res).then((data) => {
         res.end(ReactDOMServer.renderToStaticMarkup(
             React.createElement(Wrapper, {
-                content: ReactDOMServer.renderToString(React.createElement(Summary, {}))
+                content: ReactDOMServer.renderToString(React.createElement(Summary, {data}))
             })
         ));
+    }).catch((err) => {
+        serverError(res, 'html', err.toString());
     });
 });
 
@@ -50,7 +53,25 @@ app.post('/node', rawBodyParser, function (req, res) {
     }
 
 
-    device(pool, req, res).then((result) => {
+    device(pool, req.rawBody, req, res).then((result) => {
+        console.log("ok! ", result);
+        ok(res, responseType, "OK "+result);
+    }).catch((err) => {
+        serverError(res, responseType, err.toString());
+    });
+});
+
+app.get('/node', rawBodyParser, function (req, res) {
+    let responseType = req.query.type == 'json' ? json : 'text';
+    if (responseType == 'json') {
+        res.set('Content-Type', 'text/json');
+    }
+    else {
+        res.set('Content-Type', 'text/plain');
+    }
+
+
+    device(pool, req.query.data, req, res).then((result) => {
         console.log("ok! ", result);
         ok(res, responseType, "OK "+result);
     }).catch((err) => {
