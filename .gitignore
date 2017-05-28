@@ -8,3 +8,9 @@
 /build
 /captures
 .externalNativeBuild
+node_modules
+dbConfig.js
+dist/
+build/
+*.sublime-*
+npm-debug.log
