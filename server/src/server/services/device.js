@@ -11,8 +11,5 @@ export default function(pool, data, req, res) {
                     [obj.type, obj.sender, obj.senttime, obj.text, obj.temp, obj.alt])
             )
         ).then((r) => r.length)
-        .catch((e) => {
-            throw e;
-        })
     );
 }
