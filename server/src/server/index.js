@@ -7,7 +7,7 @@ const app = express();
 import ReactDOMServer from 'react-dom/server';
 import React from 'react';
 import Wrapper from './wrapper';
-import Summary from '../client/summary';
+import Summary from '../client/Summary';
 import device from  './services/device';
 
 import dbConfig from './dbConfig';
