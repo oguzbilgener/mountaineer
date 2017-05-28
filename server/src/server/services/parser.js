@@ -25,7 +25,7 @@ function parse(msg) {
         return null;
     }
 
-    let payload = interm.substring(4, e);
+    let payload = interm.substring(5, e);
 
 
     let obj = {
@@ -48,7 +48,6 @@ function parse(msg) {
     else if (type == 3) {
         let parts = payload.split('#');
         if (parts.length == 2) {
-            console.log(parts[0], parseFloat(parts[0]));
             obj.temp = parseFloat(parts[0])
             obj.alt = parseInt(parts[1])
         }
