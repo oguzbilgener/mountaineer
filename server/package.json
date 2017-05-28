@@ -21,25 +21,19 @@
   },
   "homepage": "https://github.com/oguzbilgener/mountaineer#readme",
   "dependencies": {
-    "babel-cli": "^6.4.5",
-    "babel-core": "^6.4.5",
-    "babel-loader": "^6.2.1",
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.24.1",
+    "babel-loader": "^6.4.1",
     "babel-preset-es2015": "^6.3.13",
-    "babel-preset-react": "^6.3.13",
+    "babel-preset-es2015": "^6.24.1",
     "body-parser": "^1.17.2",
-    "es6-promise": "^4.0.5",
+    "es6-promise": "^4.1.0",
     "express": "^4.15.3",
     "lodash": "^4.1.0",
     "pg": "^6.2.3",
-    "react": "^15.4.0",
-    "react-dom": "^15.4.0",
-    "react-i18n-wrapper": "^0.15.4",
-    "react-redux": "^4.4.5",
-    "redux": "^3.6.0",
-    "redux-thunk": "^2.1.0",
-    "webpack": "^1.13.3",
-    "webpack-dev-middleware": "^1.8.4",
-    "webpack-hot-middleware": "^2.13.2"
+    "react": "^15.5.4",
+    "react-dom": "^15.5.4",
+    "webpack": "^1.13.3"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1"

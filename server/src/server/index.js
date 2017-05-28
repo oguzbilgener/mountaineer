@@ -60,6 +60,7 @@ app.post('/node', rawBodyParser, function (req, res) {
 
 
 app.use('/mountaineer', express.static(path.resolve(__dirname + '/../../dist')));
+app.use('/assets', express.static(path.resolve(__dirname + '/../../assets')));
 
 let port = 9009;
 app.listen(port, function () {
