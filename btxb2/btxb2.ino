@@ -333,7 +333,7 @@ void sendBtHumanMessage(char str[]) {
     char buf[24];
     int c = 0;
     while(str[c] != '\0') {
-        buf[4+c] = str[c];
+        buf[5+c] = str[c];
         c++;
     }
     buf[0] = '$';
@@ -341,9 +341,9 @@ void sendBtHumanMessage(char str[]) {
     buf[2] = '$';
     buf[3] = '1';
     buf[4] = '3';
-    buf[4+c] = '$';
-    buf[4+c+1] = '$';
-    buf[4+c+2] = '$';
+    buf[5+c] = '$';
+    buf[5+c+1] = '$';
+    buf[5+c+2] = '$';
     sendBt(buf, 4+c+3);
 }
 
