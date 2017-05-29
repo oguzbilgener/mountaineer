@@ -5,11 +5,25 @@
 #define SENSOR_MS 10 * 1000
 
 
+#include <string.h>
 #include <SoftwareSerial.h>
 #include <SFE_BMP180.h>
 #include <Wire.h>
 
+SoftwareSerial GSMSerial(11, 10); // RX, TX
 SoftwareSerial bt(7,8);
+
+const char GPRS1[] = "AT+SAPBR=3,1,\"Contype\",\"GPRS\"";
+const char GPRS2[] = "AT+SAPBR=3,1,\"APN\",\"internet\"";
+const char GPRS3[] = "AT+SAPBR=1,1";
+const char GPRS4[] = "AT+SAPBR=2,1";
+const char HTTP1[] = "AT+HTTPINIT";
+const char HTTP2[] = "AT+HTTPPARA=\"CID\",1";
+const char HTTP3[] = "AT+HTTPPARA=\"URL\",\"http://m.oguz.lol/node?data=";
+const char HTTP4[] = "AT+HTTPACTION=0";
+
+const int DEBUG = 0;
+const int IGNITE_PIN = 5;
 
 boolean IS_LEADER;
 char sosMessage[8];
@@ -43,6 +57,8 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   bt.begin(9600);
+  GSMSerial.begin(19200);
+  igniteGSM();
   pinMode(SOSPIN, INPUT);
   pinMode(LEADERPIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
@@ -51,11 +67,29 @@ void setup() {
   lastSensorSendTime = 0;
   lastWarningLedTime = 0;
 
+  delay(5000);
+
   digitalWrite(LED_BUILTIN, HIGH);
   delay(400);
   digitalWrite(LED_BUILTIN, LOW);
+  delay(100);
 
   IS_LEADER = digitalRead(LEADERPIN);
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  while(GSMSerial.available()) {
+    if (DEBUG) {
+      Serial.write(GSMSerial.read());
+    } else {
+      GSMSerial.read();
+    }
+  }
+
+  turnOffEcho();
+  openAttachGPRS();
+
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(200);
 
   if (pressure.begin()) {
     delay(100);
@@ -147,7 +181,8 @@ void useHwMessage(){
     forwardHwToBt();
     // TODO LEADER
     if (IS_LEADER) {
-
+        inHwBuffer[hwPos+1] = '\0';
+        makeHTTPRequest(inHwBuffer);
     }
   }
   else {
@@ -188,6 +223,9 @@ void sendSensorValues(){
   sensorMessage[17] = '\0';
   sendBt(sensorMessage, 17);
   sendHw(sensorMessage, 17);
+  if (IS_LEADER) {
+    makeHTTPRequest(sensorMessage);
+  }
 }
 void sendSosSignal() {
   sosMessage[0] = '$';
@@ -346,4 +384,96 @@ void sendBtHumanMessage(char str[]) {
     buf[5+c+2] = '$';
     sendBt(buf, 4+c+3);
 }
+
+int sendATCommand(const char *cmd, int del = 500, char *data = NULL) {
+  char response[64];
+  int index = 0;
+
+  //url encoding
+  if (data) {
+    GSMSerial.print(cmd);
+
+    const char *cursor_;
+    cursor_ = data;
+    while (*cursor_) {
+      switch (*cursor_) {
+        case '$':
+          GSMSerial.print("%24");
+          break;
+        case '#':
+          GSMSerial.print("%23");
+          break;
+        case '|':
+          GSMSerial.print("%7C");
+          break;
+        default:
+          GSMSerial.print(*cursor_);
+      }
+      cursor_++;
+    }
+    GSMSerial.print("\"\r\n");
+  } else {
+    GSMSerial.println(cmd);
+  }
+
+  delay(del);
+
+  while (GSMSerial.available()) {
+    response[index++] = GSMSerial.read();
+  }
+
+  //null
+  response[index] = '\0';
+
+  if (DEBUG) {
+    Serial.print("CMD: ");
+    Serial.println(cmd);
+    if (data) {
+      Serial.print("Data: ");
+      Serial.println(data);
+    }
+    Serial.print("Response: ");
+    Serial.println(response);
+  }
+
+  if ( strcmp(response, "\r\nOK\r\n") == 0 ) {
+    return 1;
+  } else if ( strcmp(response, "\r\nERROR\r\n") == 0 ) {
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
+void turnOffEcho() {
+  GSMSerial.println("ATE0");
+  delay(500);
+  while(GSMSerial.available()) {
+    if (DEBUG) {
+      Serial.write(GSMSerial.read());
+    } else {
+      GSMSerial.read();
+    }
+  }
+}
+int makeHTTPRequest(char *data) {
+  sendATCommand(HTTP1);
+  sendATCommand(HTTP2);
+  sendATCommand(HTTP3, 500, data);
+  sendATCommand(HTTP4);
+}
+
+void openAttachGPRS() {
+  sendATCommand(GPRS1);
+  sendATCommand(GPRS2);
+  while (sendATCommand(GPRS3, 3000) != 1) {}
+  sendATCommand(GPRS4);
+}
+
+void igniteGSM() {
+  pinMode(IGNITE_PIN, OUTPUT);
+  delay(3000);
+  pinMode(IGNITE_PIN, INPUT);
+}
+
 
